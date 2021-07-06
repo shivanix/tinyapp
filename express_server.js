@@ -46,9 +46,10 @@ app.get("/urls/new", (req, res) => {
  because Express will think that new is a route parameter*/
 
 app.get("/urls/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
   const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: req.params.longURL
+    shortURL: shortURL,
+    longURL: urlDatabase[shortURL]
   };
   res.render("urls_show", templateVars);
 });
@@ -72,15 +73,7 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(301, longURL);
 });
 
-//DELETE
-app.post("/urls/:shortURL/delete", (req, res) => {
-  const shortURL = req.params.shortURL;
 
-  console.log(`Deleting ${urlDatabase[shortURL]} from the database...`);
-  delete urlDatabase[shortURL];
-
-  res.redirect("/urls"); //After deletion, the client is being redirected back to the urls_index page ("/urls").
-});
 
 
 app.post("/urls", (req, res) => {
@@ -93,6 +86,35 @@ app.post("/urls", (req, res) => {
   console.log(urlDatabase);
   
   res.redirect(`/urls/${newShortUrl}`); // Redirecting client to new URL's (/urls/:shortURL) page
+});
+
+//DELETE
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL;
+
+  console.log(`Deleting ${urlDatabase[shortURL]} from the database...`);
+  delete urlDatabase[shortURL];
+
+  res.redirect("/urls"); //After deletion, the client is being redirected back to the urls_index page ("/urls").
+});
+
+//EDIT
+app.get("/urls/:shortURL/edit", (req, res) => {
+  const shortURL = req.params.shortURL;
+  const templateVars = {
+    shortURL: shortURL,
+    longURL: urlDatabase[shortURL]
+  };
+  console.log(templateVars);
+  res.render("urls_show", templateVars);
+});
+
+app.post("/urls/:shortURL/edit", (req, res) => {
+  const shortURL = req.params.shortURL;
+
+  console.log(`Editing ${urlDatabase[shortURL]} from the database...`);
+
+  res.redirect(`/urls/${shortURL}/edit`);
 });
 
 app.listen(PORT, () => {
