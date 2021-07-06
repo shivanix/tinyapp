@@ -20,6 +20,7 @@ const generateRandomString = () => {
   return output;
 };
 
+//using 'urlDatabase' object as a database with 'shortURL' as key and 'longURL' as value
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -71,14 +72,27 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(301, longURL);
 });
 
+//DELETE
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL;
+
+  console.log(`Deleting ${urlDatabase[shortURL]} from the database...`);
+  delete urlDatabase[shortURL];
+
+  res.redirect("/urls"); //After deletion, the client is being redirected back to the urls_index page ("/urls").
+});
+
+
 app.post("/urls", (req, res) => {
   let dataReceived = req.body;
   let newShortUrl = generateRandomString();
+
   urlDatabase[newShortUrl] = dataReceived.longURL;
+
   console.log(dataReceived); // Log the POST request body to the console
   console.log(urlDatabase);
-  //server then responds with a redirect to /urls/:shortURL
-  res.redirect(`/urls/${newShortUrl}`); // Redirecting client to new URL's page
+  
+  res.redirect(`/urls/${newShortUrl}`); // Redirecting client to new URL's (/urls/:shortURL) page
 });
 
 app.listen(PORT, () => {
