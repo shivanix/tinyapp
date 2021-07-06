@@ -9,6 +9,9 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
+
 const generateRandomString = () => {
   const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const amount = 6;
@@ -32,6 +35,7 @@ app.get("/", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const templateVars = {
+    username: req.cookies["username"],
     urls: urlDatabase
   };
   res.render("urls_index", templateVars);
@@ -48,6 +52,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const templateVars = {
+    username: req.cookies["username"],
     shortURL: shortURL,
     longURL: urlDatabase[shortURL]
   };
@@ -102,6 +107,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.get("/urls/:shortURL/edit", (req, res) => {
   const shortURL = req.params.shortURL;
   const templateVars = {
+    username: req.cookies["username"],
     shortURL: shortURL,
     longURL: urlDatabase[shortURL]
   };
@@ -115,6 +121,15 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   console.log(`Editing ${urlDatabase[shortURL]} from the database...`);
 
   res.redirect(`/urls/${shortURL}/edit`);
+});
+
+//Cookie
+
+app.post("/login", (req, res) => {
+  const usernameInput = req.body.username;
+  res.cookie('username', usernameInput);
+  console.log(req.body);
+  res.redirect(`/urls`);
 });
 
 app.listen(PORT, () => {
