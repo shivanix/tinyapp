@@ -1,5 +1,5 @@
 const express = require("express");
-const app = express();
+const app = express(); //app used when refering to express module(best practice)
 const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
@@ -12,6 +12,7 @@ app.use(bodyParser.urlencoded({
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
+//Generating random aplfanumeric string
 const generateRandomString = () => {
   const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const amount = 6;
@@ -29,8 +30,17 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+//Res when request gets triggered at the location ("/" here).
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.send("Hello there!");
+});
+
+//REGISTER
+app.get("/register", (req,res) => {
+  const templateVars = {
+    username: req.cookies["username"]
+  };
+  res.render("urls_register", templateVars);
 });
 
 app.get("/urls", (req, res) => {
@@ -67,7 +77,7 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
+  res.send("<html><body>Hello <b>there!</b></body></html>\n");
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -123,6 +133,7 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   res.redirect(`/urls/${shortURL}/edit`);
 });
 
+
 //Cookie
 
 app.post("/login", (req, res) => {
@@ -138,5 +149,15 @@ app.post("/logout", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`Tiny app listening on port ${PORT}!`);
 });
+
+//one of app(express) methods called listen which tells it to listen on a specific port(here variable PORT ===8080) to any http req sent to the server(if any browsers are trying to get in touch with it)
+//added a callback f to the method listen & is called back using console.log()--the server will tell 'Tiny app...'
+
+/*const express = require("express");
+const app = express();
+app.listen(8080);
+
+This literally built a server
+*/
