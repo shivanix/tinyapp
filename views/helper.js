@@ -9,13 +9,13 @@ const authenticate = (userObj, userDB) => {
     const databaseUser = userDB[userKey];
     if (userObj.email === databaseUser.email) {
       if (userObj.password === databaseUser.password) {
-        return true;
+        return databaseUser;
       } else {
-        return false;
+        return undefined;
       }
     }
   }
-  return false;
+  return undefined;
 };
 
 const emailLookup = (userEmail, userDB) => {

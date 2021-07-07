@@ -49,7 +49,6 @@ app.get("/", (req, res) => {
 /*-------GET /register endpoint---------*/
 app.get("/register", (req, res) => {
   const templateVars = {
-    username: req.cookies["user_id"]
   };
   res.render("urls_register", templateVars);
 });
@@ -73,12 +72,6 @@ app.post("/register", (req, res) => {
   }
   const newPassword = dataReceived.password;
 
-  // if(email.length === 0 || password.length === 0){
-  //   return res.status(400).send({
-  //     message: 'This is an error!',
-  //     response: 400
-  //  });
-  // }
   const newUserObj = {
     id: newId,
     email: newUserEmail,
@@ -92,16 +85,43 @@ app.post("/register", (req, res) => {
   res.cookie('user_id', usersDatabase[newId]); // Setting cookie
   res.redirect(`/urls`);
 });
-/*------------------------------*/
 
-app.get("/urls", (req, res) => {
-  const userCookie = req.cookies["user_id"];
-  const userValidation = authenticate(userCookie, usersDatabase);
-  if (!userValidation) {
-    res.clearCookie('user_id');
+//Login
+/*-----------------Login-------------------*/
+
+app.get("/login", (req,res) => {
+  res.render("urls_login");
+})
+
+app.post("/login", (req, res) => {
+  const userData = req.body;
+  const userValidation = authenticate(userData, usersDatabase);
+  if(typeof userValidation === "undefined"){
+    return res.status(403).send({
+      message: 'Incorrect Email or password!'
+    });
   }
+  console.log(userData, " Logged in");
+  res.cookie('user_id', usersDatabase[userValidation.id]); // Setting cookie
+const templateVars = {
+  user: userData,
+  urls: urlDatabase
+};
+console.log(req.body);
+  res.render("urls_index", templateVars);
+});
+
+
+/*-----------------lOGOUT-------*/
+app.post("/logout", (req, res) => {
+  console.log("Deleting cookie for user");
+  res.clearCookie('user_id');
+  res.redirect(`/urls`);
+});
+
+//
+app.get("/urls", (req, res) => {
   const templateVars = {
-    username: req.cookies["user_id"],
     urls: urlDatabase
   };
   res.render("urls_index", templateVars);
@@ -121,7 +141,6 @@ app.post("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.cookies["user_id"]
   };
   res.render("urls_new", templateVars);
 });
@@ -133,7 +152,6 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const templateVars = {
-    username: req.cookies["user_id"],
     shortURL: shortURL,
     longURL: urlDatabase[shortURL]
   };
@@ -178,7 +196,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.get("/urls/:shortURL/edit", (req, res) => {
   const shortURL = req.params.shortURL;
   const templateVars = {
-    username: req.cookies["user_id"],
     shortURL: shortURL,
     longURL: urlDatabase[shortURL]
   };
@@ -195,20 +212,6 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 });
 
 
-//Cookie
-
-app.post("/login", (req, res) => {
-  //const usernameInput = req.body.username;
-  //console.log(req.body);
-
-  res.redirect(`/urls`);
-});
-
-app.post("/logout", (req, res) => {
-  console.log("Deleting cookie for user");
-  res.clearCookie('user_id');
-  res.redirect(`/urls`);
-});
 
 app.listen(PORT, () => {
   console.log(`Tiny app listening on port ${PORT}!`);

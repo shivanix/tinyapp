@@ -12,20 +12,25 @@
       </div>
     </div>
     <div>
-      <% if(username === undefined){ %>
-      <form action="/login" method="POST">
-        <label for="team_name"></label>
-        <input id="team_name" type="text" name=username placeholder= "Username">
+      <% if(typeof user === "undefined"){ %>
+        <form action="/login" method="GET">
         <input type="submit" value="Login">
-      </form>
-      <% } else{ %>
-        <form action="/logout" method="POST">
-          <label for="name"><h4><%= `Logged in as: ${username.email}` %></h4></label>
-          
-          <input type="submit" value="Logout">
         </form>
       
-      <% } %>
+          <form action="/register" method="GET">
+            <input type="submit" value="Register">
+          </form>
+
+        <% } else{ %>
+          <form action="/logout" method="POST">
+            <label for="name"><h4><%= `Logged in as: ${user.email}` %></h4></label>
+            <input type="submit" value="Logout">
+          </form>
+        
+        <% } %>
+    
+      
+   
 
     </div>
   </nav>
