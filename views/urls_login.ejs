@@ -4,7 +4,7 @@
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
     integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-  <title>Register</title>
+  <title>Login</title>
 </head>
 <header>
   <%- include('partials/_header') %>
@@ -13,10 +13,19 @@
 <body>
   <div>
     <form action="/login" method="POST">
-      <!-- <label for="team_name"></label> -->
-      <input type="email" name=email placeholder="Enter email address">
-      <input type="password" name=password placeholder="password">
-      <input type="submit" value="Submit">
+      <div class="container">
+        <main style="margin: 1em;"></main>
+        <h1>Login</h1>
+        <p>Please fill in Login details.</p>
+        <hr>
+        <label for="email"><b>Email</b></label>
+      <input type="email" name=email placeholder="Enter Email">
+      <hr>
+      <label for="password"><b>Password</b></label>
+      <input type="password" name=password placeholder="Enter password" style="width: 300px; margin: 1em">
+      <hr>
+      <button type="submit" class="btn btn-primary">Login</button>
+    </form>
   </div>
 
 

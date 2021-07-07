@@ -91,23 +91,23 @@ app.post("/register", (req, res) => {
 
 app.get("/login", (req,res) => {
   res.render("urls_login");
-})
+});
 
 app.post("/login", (req, res) => {
   const userData = req.body;
   const userValidation = authenticate(userData, usersDatabase);
-  if(typeof userValidation === "undefined"){
+  if (typeof userValidation === "undefined") {
     return res.status(403).send({
       message: 'Incorrect Email or password!'
     });
   }
   console.log(userData, " Logged in");
   res.cookie('user_id', usersDatabase[userValidation.id]); // Setting cookie
-const templateVars = {
-  user: userData,
-  urls: urlDatabase
-};
-console.log(req.body);
+  const templateVars = {
+    user: userData,
+    urls: urlDatabase
+  };
+  console.log(req.body);
   res.render("urls_index", templateVars);
 });
 

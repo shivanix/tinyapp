@@ -13,10 +13,17 @@
 <body>
   <div>
     <form action="/register" method="POST">
-      <!-- <label for="team_name"></label> -->
-      <input type="email" name=email placeholder="Enter email address">
-      <input type="password" name=password placeholder="password">
-      <input type="submit" value="Submit">
+      <div class="container">
+        <h1>Create Account</h1>
+        <p>Please fill in this form to create an account.</p>
+        <hr>
+        <label for="email"><b>Email</b></label>
+        <input type="text" placeholder="Enter Email" name=email id="email" required style="width: 300px; margin: 1em">
+        <hr>
+      <label for="password"><b>Password</b></label>
+      <input type="password" placeholder="Enter Password" name=password id="password" required style="width: 300px; margin: 1em">
+      <hr>
+      <button type="submit" class="btn btn-primary">Register</button>
     </form>
   </div>
 
