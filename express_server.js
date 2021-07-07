@@ -10,6 +10,10 @@ app.use(bodyParser.urlencoded({
 }));
 
 const cookieParser = require("cookie-parser");
+const {
+  authenticate,
+  emailLookup
+} = require("./views/helper");
 app.use(cookieParser());
 
 //Generating random aplfanumeric string
@@ -33,8 +37,7 @@ const urlDatabase = {
 
 //'usersDatabase' object to store & access the users in the app
 
-const usersDatabase = {
-};
+const usersDatabase = {};
 
 
 //Res when request gets triggered at the location ("/" here).
@@ -44,7 +47,7 @@ app.get("/", (req, res) => {
 
 //REGISTER
 /*-------GET /register endpoint---------*/
-app.get("/register", (req,res) => {
+app.get("/register", (req, res) => {
   const templateVars = {
     username: req.cookies["user_id"]
   };
@@ -52,24 +55,51 @@ app.get("/register", (req,res) => {
 });
 
 /*-----POST /register endpoint-----*/
-app.post("/register", (req,res) => {
-const dataReceived = req.body;
-const newId = generateRandomString();
+app.post("/register", (req, res) => {
+  const dataReceived = req.body;
+  const newId = generateRandomString();
+  if (!(dataReceived && dataReceived.email && dataReceived.password)) {
+    return res.status(400).send({
+      message: 'Error! Email or/and Password input are invalid!'
+    });
+  }
+  const newUserEmail = dataReceived.email;
+  const emailAlreadyInUse = emailLookup(newUserEmail, usersDatabase);
+  console.log("Email already in use: ", emailAlreadyInUse);
+  if (emailAlreadyInUse) {
+    return res.status(400).send({
+      message: 'Error! Email already in use!'
+    });
+  }
+  const newPassword = dataReceived.password;
 
-const newUserEmail =dataReceived.email;
-const newPassword = dataReceived.password;
-const newUserObj = {id: newId, email: newUserEmail, password: newPassword};
+  // if(email.length === 0 || password.length === 0){
+  //   return res.status(400).send({
+  //     message: 'This is an error!',
+  //     response: 400
+  //  });
+  // }
+  const newUserObj = {
+    id: newId,
+    email: newUserEmail,
+    password: newPassword
+  };
 
-usersDatabase[newId] = newUserObj;
+  usersDatabase[newId] = newUserObj;
 
-console.log("Data received: ", dataReceived);
-console.log("New user created: ", usersDatabase[newId]);
-res.cookie('user_id', usersDatabase[newId]); // Setting cookie
-res.redirect(`/urls`);
+  console.log("Data received: ", dataReceived);
+  console.log("New user created: ", usersDatabase[newId]);
+  res.cookie('user_id', usersDatabase[newId]); // Setting cookie
+  res.redirect(`/urls`);
 });
 /*------------------------------*/
 
 app.get("/urls", (req, res) => {
+  const userCookie = req.cookies["user_id"];
+  const userValidation = authenticate(userCookie, usersDatabase);
+  if (!userValidation) {
+    res.clearCookie('user_id');
+  }
   const templateVars = {
     username: req.cookies["user_id"],
     urls: urlDatabase
@@ -85,7 +115,7 @@ app.post("/urls", (req, res) => {
 
   console.log(dataReceived); // Logging the POST request body to the console
   console.log(urlDatabase);
-  
+
   res.redirect(`/urls/${newShortUrl}`); // Redirecting client to new URL's (/urls/:shortURL) page
 });
 
@@ -121,9 +151,9 @@ app.get("/hello", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const shortUrl = req.params.shortURL; //getting the parameters passed in the GET req, then we R getting shortURL parameter/property
   const longURL = urlDatabase[shortUrl];
-  if (longURL === undefined) {
-    //Give 404 response
-  }
+  // if (longURL === undefined) {
+  //   //Give 404 response
+  // }
 
   console.log("Redirecting client to: " + longURL);
   res.redirect(301, longURL);
@@ -170,6 +200,7 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 app.post("/login", (req, res) => {
   //const usernameInput = req.body.username;
   //console.log(req.body);
+
   res.redirect(`/urls`);
 });
 
