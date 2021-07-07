@@ -24,11 +24,18 @@ const generateRandomString = () => {
   return output;
 };
 
-//using 'urlDatabase' object as a database with 'shortURL' as key and 'longURL' as value
+//Using 'urlDatabase' object as a database for urls with 'shortURL' as key and 'longURL' as value
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+
+//'usersDatabase' object to store & access the users in the app
+
+const usersDatabase = {
+};
+
 
 //Res when request gets triggered at the location ("/" here).
 app.get("/", (req, res) => {
@@ -36,24 +43,55 @@ app.get("/", (req, res) => {
 });
 
 //REGISTER
+/*-------GET /register endpoint---------*/
 app.get("/register", (req,res) => {
   const templateVars = {
-    username: req.cookies["username"]
+    username: req.cookies["user_id"]
   };
   res.render("urls_register", templateVars);
 });
 
+/*-----POST /register endpoint-----*/
+app.post("/register", (req,res) => {
+const dataReceived = req.body;
+const newId = generateRandomString();
+
+const newUserEmail =dataReceived.email;
+const newPassword = dataReceived.password;
+const newUserObj = {id: newId, email: newUserEmail, password: newPassword};
+
+usersDatabase[newId] = newUserObj;
+
+console.log("Data received: ", dataReceived);
+console.log("New user created: ", usersDatabase[newId]);
+res.cookie('user_id', usersDatabase[newId]); // Setting cookie
+res.redirect(`/urls`);
+});
+/*------------------------------*/
+
 app.get("/urls", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"],
+    username: req.cookies["user_id"],
     urls: urlDatabase
   };
   res.render("urls_index", templateVars);
 });
 
+app.post("/urls", (req, res) => {
+  let dataReceived = req.body;
+  let newShortUrl = generateRandomString();
+
+  urlDatabase[newShortUrl] = dataReceived.longURL;
+
+  console.log(dataReceived); // Logging the POST request body to the console
+  console.log(urlDatabase);
+  
+  res.redirect(`/urls/${newShortUrl}`); // Redirecting client to new URL's (/urls/:shortURL) page
+});
+
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"],
+    username: req.cookies["user_id"]
   };
   res.render("urls_new", templateVars);
 });
@@ -65,7 +103,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const templateVars = {
-    username: req.cookies["username"],
+    username: req.cookies["user_id"],
     shortURL: shortURL,
     longURL: urlDatabase[shortURL]
   };
@@ -91,19 +129,11 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(301, longURL);
 });
 
-app.post("/urls", (req, res) => {
-  let dataReceived = req.body;
-  let newShortUrl = generateRandomString();
 
-  urlDatabase[newShortUrl] = dataReceived.longURL;
 
-  console.log(dataReceived); // Log the POST request body to the console
-  console.log(urlDatabase);
-  
-  res.redirect(`/urls/${newShortUrl}`); // Redirecting client to new URL's (/urls/:shortURL) page
-});
-
+/*--------------------------------------------------------------------------------------------*/
 //DELETE
+
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
 
@@ -114,10 +144,11 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 //EDIT
+
 app.get("/urls/:shortURL/edit", (req, res) => {
   const shortURL = req.params.shortURL;
   const templateVars = {
-    username: req.cookies["username"],
+    username: req.cookies["user_id"],
     shortURL: shortURL,
     longURL: urlDatabase[shortURL]
   };
@@ -137,14 +168,14 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 //Cookie
 
 app.post("/login", (req, res) => {
-  const usernameInput = req.body.username;
-  res.cookie('username', usernameInput);
-  console.log(req.body);
+  //const usernameInput = req.body.username;
+  //console.log(req.body);
   res.redirect(`/urls`);
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  console.log("Deleting cookie for user");
+  res.clearCookie('user_id');
   res.redirect(`/urls`);
 });
 
@@ -152,7 +183,7 @@ app.listen(PORT, () => {
   console.log(`Tiny app listening on port ${PORT}!`);
 });
 
-//one of app(express) methods called listen which tells it to listen on a specific port(here variable PORT ===8080) to any http req sent to the server(if any browsers are trying to get in touch with it)
+//one of app(i.e. express) methods called listen which tells it to listen on a specific port(here variable PORT ===8080) to any http req sent to the server(if any browsers are trying to get in touch with it)
 //added a callback f to the method listen & is called back using console.log()--the server will tell 'Tiny app...'
 
 /*const express = require("express");

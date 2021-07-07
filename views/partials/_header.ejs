@@ -20,7 +20,7 @@
       </form>
       <% } else{ %>
         <form action="/logout" method="POST">
-          <label for="name"><h4><%= `Logged in as: ${username}` %></h4></label>
+          <label for="name"><h4><%= `Logged in as: ${username.email}` %></h4></label>
           
           <input type="submit" value="Logout">
         </form>
