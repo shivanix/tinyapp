@@ -42,7 +42,10 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    username: req.cookies["username"],
+  };
+  res.render("urls_new", templateVars);
 });
 
 /*The GET /urls/new route needs to be defined before the GET /urls/:id route. Routes defined earlier will take precedence,
@@ -77,9 +80,6 @@ app.get("/u/:shortURL", (req, res) => {
   console.log("Redirecting client to: " + longURL);
   res.redirect(301, longURL);
 });
-
-
-
 
 app.post("/urls", (req, res) => {
   let dataReceived = req.body;
@@ -129,6 +129,11 @@ app.post("/login", (req, res) => {
   const usernameInput = req.body.username;
   res.cookie('username', usernameInput);
   console.log(req.body);
+  res.redirect(`/urls`);
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie('username');
   res.redirect(`/urls`);
 });
 
