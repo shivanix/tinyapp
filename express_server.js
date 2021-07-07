@@ -30,8 +30,7 @@ const generateRandomString = () => {
 
 //Using 'urlDatabase' object as a database for urls with 'shortURL' as key and 'longURL' as value
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+
 };
 
 
@@ -82,7 +81,7 @@ app.post("/register", (req, res) => {
 
   console.log("Data received: ", dataReceived);
   console.log("New user created: ", usersDatabase[newId]);
-  res.cookie('user_id', usersDatabase[newId]); // Setting cookie
+  // res.cookie('user_id', usersDatabase[newId]); // Setting cookie
   res.redirect(`/urls`);
 });
 
@@ -122,7 +121,8 @@ app.post("/logout", (req, res) => {
 //
 app.get("/urls", (req, res) => {
   const templateVars = {
-    urls: urlDatabase
+    urls: urlDatabase,
+    usercookie: req.cookies["user_id"]
   };
   res.render("urls_index", templateVars);
 });
@@ -130,10 +130,10 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
   let dataReceived = req.body;
   let newShortUrl = generateRandomString();
+  let userCookie = req.cookies["user_id"];
+  urlDatabase[newShortUrl] = {longURL: dataReceived.longURL, userID: userCookie.id};
 
-  urlDatabase[newShortUrl] = dataReceived.longURL;
-
-  console.log(dataReceived); // Logging the POST request body to the console
+  console.log("Data received: ", dataReceived); // Logging the POST request body to the console
   console.log(urlDatabase);
 
   res.redirect(`/urls/${newShortUrl}`); // Redirecting client to new URL's (/urls/:shortURL) page
@@ -141,6 +141,7 @@ app.post("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {
+    usercookie: req.cookies["user_id"] // user_id is the cookie's name
   };
   res.render("urls_new", templateVars);
 });
@@ -153,7 +154,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const templateVars = {
     shortURL: shortURL,
-    longURL: urlDatabase[shortURL]
+    longURL: urlDatabase[shortURL].longURL
   };
   res.render("urls_show", templateVars);
 });
@@ -167,8 +168,8 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const shortUrl = req.params.shortURL; //getting the parameters passed in the GET req, then we R getting shortURL parameter/property
-  const longURL = urlDatabase[shortUrl];
+  const shortUrl = req.params.shortURL;//getting the parameters passed in the GET req, then we R getting shortURL parameter/property
+  const longURL = urlDatabase[shortUrl].longURL;
   // if (longURL === undefined) {
   //   //Give 404 response
   // }
@@ -185,7 +186,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
 
-  console.log(`Deleting ${urlDatabase[shortURL]} from the database...`);
+  console.log(`Deleting ${urlDatabase[shortURL].longURL} from the database...`);
   delete urlDatabase[shortURL];
 
   res.redirect("/urls"); //After deletion, the client is being redirected back to the urls_index page ("/urls").
@@ -197,7 +198,7 @@ app.get("/urls/:shortURL/edit", (req, res) => {
   const shortURL = req.params.shortURL;
   const templateVars = {
     shortURL: shortURL,
-    longURL: urlDatabase[shortURL]
+    longURL: urlDatabase[shortURL].longURL
   };
   console.log(templateVars);
   res.render("urls_show", templateVars);

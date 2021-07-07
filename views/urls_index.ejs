@@ -36,7 +36,7 @@
         <tr>
           <td><%= url %></td>
           <!--Text in <td> element here is: url which is the (key or shortURL)-->
-          <td><%= urls[url] %></td>
+          <td><%= urls[url].longURL %></td>
           <!--urls[url] -(value or longURL)-->
           <td>
             <form method="POST" action=<%= `/urls/${[url]}/edit` %>>
