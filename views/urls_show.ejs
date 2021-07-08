@@ -19,11 +19,10 @@
       <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
     </div>
     <div class="card-footer">
-      <div class="card-body">
-        <h4 class="card-title">Edit</h4>
+        <h4>Edit</h4>
         <p class="card-text">New URL: <form method="POST" action=<%= `/urls/${shortURL}/edit` %>>
-          <label for="team_name">Enter new URL: </label>
-          <input id="team_name" type="text" name="name_field" value=<%= longURL %>>
+          <label>Enter new URL: </label>
+          <input type="text" name="newURL" value=<%= longURL %>>
             <input type="submit" class="btn btn-primary" value="Submit"> </form>
         </p>
       </div>

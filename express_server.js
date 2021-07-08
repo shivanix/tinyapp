@@ -104,7 +104,8 @@ app.post("/login", (req, res) => {
   res.cookie('user_id', usersDatabase[userValidation.id]); // Setting cookie
   const templateVars = {
     user: userData,
-    urls: urlDatabase
+    urls: urlDatabase,
+    usercookie: req.cookies["user_id"]
   };
   console.log(req.body);
   res.render("urls_index", templateVars);
@@ -154,7 +155,8 @@ app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const templateVars = {
     shortURL: shortURL,
-    longURL: urlDatabase[shortURL].longURL
+    longURL: urlDatabase[shortURL].longURL,
+    usercookie: req.cookies["user_id"]
   };
   res.render("urls_show", templateVars);
 });
@@ -184,11 +186,14 @@ app.get("/u/:shortURL", (req, res) => {
 //DELETE
 
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const usercookie =  req.cookies["user_id"];
   const shortURL = req.params.shortURL;
-
+const userID = urlDatabase[shortURL].userID;
+if(userID===usercookie.id){
   console.log(`Deleting ${urlDatabase[shortURL].longURL} from the database...`);
   delete urlDatabase[shortURL];
-
+}
+ 
   res.redirect("/urls"); //After deletion, the client is being redirected back to the urls_index page ("/urls").
 });
 
@@ -198,18 +203,25 @@ app.get("/urls/:shortURL/edit", (req, res) => {
   const shortURL = req.params.shortURL;
   const templateVars = {
     shortURL: shortURL,
-    longURL: urlDatabase[shortURL].longURL
+    longURL: urlDatabase[shortURL].longURL,
+    usercookie: req.cookies["user_id"]
   };
   console.log(templateVars);
   res.render("urls_show", templateVars);
 });
 
 app.post("/urls/:shortURL/edit", (req, res) => {
-  const shortURL = req.params.shortURL;
-
-  console.log(`Editing ${urlDatabase[shortURL]} from the database...`);
-
-  res.redirect(`/urls/${shortURL}/edit`);
+  
+const usercookie = req.cookies["user_id"];
+const shortURL = req.params.shortURL;
+const userID = urlDatabase[shortURL].userID;
+const newURL = req.body.newURL;
+if(userID===usercookie.id){
+  console.log("Replacing", urlDatabase[shortURL].longURL, "with", newURL);
+  urlDatabase[shortURL].longURL = newURL;
+}
+  
+  res.redirect(`/urls`);
 });
 
 

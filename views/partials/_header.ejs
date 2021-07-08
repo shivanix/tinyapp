@@ -17,7 +17,7 @@
       </div>
     </div>
     <div>
-      <% if(typeof user === "undefined"){ %>
+      <% if(typeof user === "undefined" && typeof usercookie === "undefined"){ %>
         <form action="/login" method="GET">
         <input type="submit" value="Login">
         </form>
@@ -26,15 +26,18 @@
             <input type="submit" value="Register">
           </form>
 
-        <% } else{ %>
+        <% } else if(typeof user !== "undefined"){ %>
           <form action="/logout" method="POST">
             <label for="name"><h4><%= `Logged in as: ${user.email}` %></h4></label>
             <input type="submit" value="Logout">
           </form>
         
-        <% } %>
-    
-      
+        <% }else if(usercookie !== "undefined"){ %>
+          <form action="/logout" method="POST">
+            <label for="name"><h4><%= `Logged in as: ${usercookie.email}` %></h4></label>
+            <input type="submit" value="Logout">
+          </form>
+          <% } %>
    
 
     </div>

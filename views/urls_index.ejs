@@ -31,24 +31,29 @@
       </thead>
       <tbody>
         <!--iterating over the keys('url') of the 'urlDatabase' object-->
-        
-        <% for(let url in urls) { %>
-        <tr>
-          <td><%= url %></td>
-          <!--Text in <td> element here is: url which is the (key or shortURL)-->
-          <td><%= urls[url].longURL %></td>
-          <!--urls[url] -(value or longURL)-->
-          <td>
-            <form method="POST" action=<%= `/urls/${[url]}/edit` %>>
-              <input id=<%= url %> type="submit" name=<%= [url] %> value="EDIT"> </form>
-          </td>
-          <td>
-            <form method="POST" action=<%= `/urls/${url}/delete` %>>
-              <input id=<%= url %> type="submit" name=<%= url %> value="DELETE"> </form>
-          </td>
-          
-        </tr>
+        <% if(typeof usercookie !== "undefined"){ %>
+          <% let userID = usercookie.id; %>
+          <% for(let url in urls) { %> <!---Iterate over the keys in the urlDatabase, url is a shortURL-->
+            <% if(userID !== urls[url].userID) { continue; } %>
+            <tr>
+              <td><%= url %></td>
+              <!--Text in <td> element here is: url which is the (key or shortURL)-->
+              <td><%= urls[url].longURL %></td>
+              <!--urls[url] -(this will get the value of the key, which will be an object containing userID and longURL)-->
+              <td>
+                <form method="GET" action=<%= `/urls/${[url]}` %>>
+                  <input id=<%= url %> type="submit" name=<%= [url] %> value="EDIT"> </form>
+              </td>
+              <td>
+                <form method="POST" action=<%= `/urls/${url}/delete` %>>
+                  <input id=<%= url %> type="submit" name=<%= url %> value="DELETE"> </form>
+              </td>
+              
+            </tr>
+            <% } %>
         <% } %>
+
+       
       </tbody>
     </table>
 
