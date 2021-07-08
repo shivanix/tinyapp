@@ -1,3 +1,6 @@
+const bcrypt = require('bcryptjs');
+
+
 const authenticate = (userObj, userDB) => {
   if (!userObj) {
     return false;
@@ -8,7 +11,8 @@ const authenticate = (userObj, userDB) => {
   for (let userKey of Object.keys(userDB)) {
     const databaseUser = userDB[userKey];
     if (userObj.email === databaseUser.email) {
-      if (userObj.password === databaseUser.password) {
+      // if (userObj.password === databaseUser.password) {
+      if (bcrypt.compareSync(userObj.password, databaseUser.password)) {
         return databaseUser;
       } else {
         return undefined;

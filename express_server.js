@@ -1,5 +1,6 @@
 const express = require("express");
-const app = express(); //app used when refering to express module(best practice)
+const app = express(); //app is jus a f that represents the express module & we bind that to the word app;'app' word is referring to the Express module
+
 const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
@@ -10,6 +11,9 @@ app.use(bodyParser.urlencoded({
 }));
 
 const cookieParser = require("cookie-parser");
+
+const bcrypt = require('bcryptjs');
+
 const {
   authenticate,
   emailLookup
@@ -39,7 +43,7 @@ const urlDatabase = {
 const usersDatabase = {};
 
 
-//Res when request gets triggered at the location ("/" here).
+//Res when GET request gets triggered at the location ("/" here).
 app.get("/", (req, res) => {
   res.send("Hello there!");
 });
@@ -47,8 +51,12 @@ app.get("/", (req, res) => {
 //REGISTER
 /*-------GET /register endpoint---------*/
 app.get("/register", (req, res) => {
-  const templateVars = {
-  };
+  const templateVars = {};
+
+  const password = "purple-monkey-dinosaur"; // found in the req.params object
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  console.log(hashedPassword);
+
   res.render("urls_register", templateVars);
 });
 
@@ -69,7 +77,8 @@ app.post("/register", (req, res) => {
       message: 'Error! Email already in use!'
     });
   }
-  const newPassword = dataReceived.password;
+  // const newPassword = dataReceived.password;
+  const newPassword = bcrypt.hashSync(dataReceived.password);
 
   const newUserObj = {
     id: newId,
@@ -82,13 +91,14 @@ app.post("/register", (req, res) => {
   console.log("Data received: ", dataReceived);
   console.log("New user created: ", usersDatabase[newId]);
   // res.cookie('user_id', usersDatabase[newId]); // Setting cookie
-  res.redirect(`/urls`);
+  // res.redirect(`/urls`);
+  res.redirect(`/login`);
 });
 
 //Login
 /*-----------------Login-------------------*/
 
-app.get("/login", (req,res) => {
+app.get("/login", (req, res) => {
   res.render("urls_login");
 });
 
@@ -132,7 +142,10 @@ app.post("/urls", (req, res) => {
   let dataReceived = req.body;
   let newShortUrl = generateRandomString();
   let userCookie = req.cookies["user_id"];
-  urlDatabase[newShortUrl] = {longURL: dataReceived.longURL, userID: userCookie.id};
+  urlDatabase[newShortUrl] = {
+    longURL: dataReceived.longURL,
+    userID: userCookie.id
+  };
 
   console.log("Data received: ", dataReceived); // Logging the POST request body to the console
   console.log(urlDatabase);
@@ -165,12 +178,8 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>there!</b></body></html>\n");
-});
-
 app.get("/u/:shortURL", (req, res) => {
-  const shortUrl = req.params.shortURL;//getting the parameters passed in the GET req, then we R getting shortURL parameter/property
+  const shortUrl = req.params.shortURL; //getting the parameters passed in the GET req, then we R getting shortURL parameter/property
   const longURL = urlDatabase[shortUrl].longURL;
   // if (longURL === undefined) {
   //   //Give 404 response
@@ -186,14 +195,14 @@ app.get("/u/:shortURL", (req, res) => {
 //DELETE
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const usercookie =  req.cookies["user_id"];
+  const usercookie = req.cookies["user_id"];
   const shortURL = req.params.shortURL;
-const userID = urlDatabase[shortURL].userID;
-if(userID===usercookie.id){
-  console.log(`Deleting ${urlDatabase[shortURL].longURL} from the database...`);
-  delete urlDatabase[shortURL];
-}
- 
+  const userID = urlDatabase[shortURL].userID;
+  if (userID === usercookie.id) {
+    console.log(`Deleting ${urlDatabase[shortURL].longURL} from the database...`);
+    delete urlDatabase[shortURL];
+  }
+
   res.redirect("/urls"); //After deletion, the client is being redirected back to the urls_index page ("/urls").
 });
 
@@ -211,16 +220,16 @@ app.get("/urls/:shortURL/edit", (req, res) => {
 });
 
 app.post("/urls/:shortURL/edit", (req, res) => {
-  
-const usercookie = req.cookies["user_id"];
-const shortURL = req.params.shortURL;
-const userID = urlDatabase[shortURL].userID;
-const newURL = req.body.newURL;
-if(userID===usercookie.id){
-  console.log("Replacing", urlDatabase[shortURL].longURL, "with", newURL);
-  urlDatabase[shortURL].longURL = newURL;
-}
-  
+
+  const usercookie = req.cookies["user_id"];
+  const shortURL = req.params.shortURL;
+  const userID = urlDatabase[shortURL].userID;
+  const newURL = req.body.newURL;
+  if (userID === usercookie.id) {
+    console.log("Replacing", urlDatabase[shortURL].longURL, "with", newURL);
+    urlDatabase[shortURL].longURL = newURL;
+  }
+
   res.redirect(`/urls`);
 });
 
