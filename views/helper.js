@@ -1,6 +1,18 @@
 const bcrypt = require('bcryptjs');
 
+//Generating random aplfanumeric string
+const generateRandomString = () => {
+  const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const amount = 6;
+  let output = "";
+  for (let i = 0; i < amount; i++) {
+    let newCharIndex = Math.floor(Math.random() * chars.length);
+    output += chars[newCharIndex];
+  }
+  return output;
+};
 
+//---------------------------------------------------------------
 const authenticate = (userObj, userDB) => {
   if (!userObj) {
     return false;
@@ -22,14 +34,15 @@ const authenticate = (userObj, userDB) => {
   return undefined;
 };
 
+//------------------------------------------------------------------------
 const emailLookup = (userEmail, userDB) => {
   for (let userKey of Object.keys(userDB)) {
     const databaseUserEmail = userDB[userKey].email;
     if (userEmail === databaseUserEmail) {
-      return true;
+      return databaseUserEmail; // This email will be returned if the email was found in the database
     }
   }
-  return false;
+  return undefined; // This value will be returned if the email was NOT found in the database
 };
 
-module.exports = {authenticate, emailLookup};
+module.exports = {authenticate, emailLookup, generateRandomString};

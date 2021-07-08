@@ -1,3 +1,4 @@
+let cookieSession = require('cookie-session');
 const express = require("express");
 const app = express(); //app is jus a f that represents the express module & we bind that to the word app;'app' word is referring to the Express module
 
@@ -10,32 +11,24 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 
-const cookieParser = require("cookie-parser");
 
 const bcrypt = require('bcryptjs');
 
 const {
   authenticate,
-  emailLookup
+  emailLookup,
+  generateRandomString
 } = require("./views/helper");
-app.use(cookieParser());
 
-//Generating random aplfanumeric string
-const generateRandomString = () => {
-  const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const amount = 6;
-  let output = "";
-  for (let i = 0; i < amount; i++) {
-    let newCharIndex = Math.floor(Math.random() * chars.length);
-    output += chars[newCharIndex];
-  }
-  return output;
-};
+app.use(cookieSession({
+  name: 'session',
+  keys: ["user_id"]
+}));
+
+
 
 //Using 'urlDatabase' object as a database for urls with 'shortURL' as key and 'longURL' as value
-const urlDatabase = {
-
-};
+const urlDatabase = {};
 
 
 //'usersDatabase' object to store & access the users in the app
@@ -45,11 +38,17 @@ const usersDatabase = {};
 
 //Res when GET request gets triggered at the location ("/" here).
 app.get("/", (req, res) => {
-  res.send("Hello there!");
+  if (typeof req.session.user_id === "undefined") {
+    res.redirect("/login");
+  } else {
+    res.redirect("/urls");
+  }
+
 });
 
-//REGISTER
-/*-------GET /register endpoint---------*/
+/*- --------------------------------------------------------------------------REGISTER endpoint----------------------*/
+
+//GET /register endpoint
 app.get("/register", (req, res) => {
   const templateVars = {};
 
@@ -60,24 +59,24 @@ app.get("/register", (req, res) => {
   res.render("urls_register", templateVars);
 });
 
-/*-----POST /register endpoint-----*/
+// POST /register endpoint
 app.post("/register", (req, res) => {
   const dataReceived = req.body;
   const newId = generateRandomString();
   if (!(dataReceived && dataReceived.email && dataReceived.password)) {
-    return res.status(400).send({
-      message: 'Error! Email or/and Password input are invalid!'
-    });
+    return res.status(400).send(
+      'Error! Email or/and Password input are invalid!  Please <a href="/register"> try again</a>'
+    );
   }
   const newUserEmail = dataReceived.email;
   const emailAlreadyInUse = emailLookup(newUserEmail, usersDatabase);
   console.log("Email already in use: ", emailAlreadyInUse);
-  if (emailAlreadyInUse) {
+  if (typeof emailAlreadyInUse !== "undefined") {
     return res.status(400).send({
       message: 'Error! Email already in use!'
     });
   }
-  // const newPassword = dataReceived.password;
+
   const newPassword = bcrypt.hashSync(dataReceived.password);
 
   const newUserObj = {
@@ -90,13 +89,12 @@ app.post("/register", (req, res) => {
 
   console.log("Data received: ", dataReceived);
   console.log("New user created: ", usersDatabase[newId]);
-  // res.cookie('user_id', usersDatabase[newId]); // Setting cookie
-  // res.redirect(`/urls`);
+  
   res.redirect(`/login`);
 });
 
 //Login
-/*-----------------Login-------------------*/
+/*-----------------------------------------------------------------------LOGIN-------------------*/
 
 app.get("/login", (req, res) => {
   res.render("urls_login");
@@ -106,70 +104,105 @@ app.post("/login", (req, res) => {
   const userData = req.body;
   const userValidation = authenticate(userData, usersDatabase);
   if (typeof userValidation === "undefined") {
-    return res.status(403).send({
-      message: 'Incorrect Email or password!'
-    });
+    return res.status(403).send("Incorrect Email or password! Please <a href='/login'> try again</a>"
+    );
   }
   console.log(userData, " Logged in");
-  res.cookie('user_id', usersDatabase[userValidation.id]); // Setting cookie
+  req.session.user_id = usersDatabase[userValidation.id]; // Setting cookie
   const templateVars = {
     user: userData,
     urls: urlDatabase,
-    usercookie: req.cookies["user_id"]
+    usercookie: req.session.user_id
   };
   console.log(req.body);
   res.render("urls_index", templateVars);
 });
 
 
-/*-----------------lOGOUT-------*/
+/*---------------------------------------------------------------------------lOGOUT----------------------*/
+//Logout
 app.post("/logout", (req, res) => {
   console.log("Deleting cookie for user");
-  res.clearCookie('user_id');
-  res.redirect(`/urls`);
+ 
+  req.session = null; // Destroys the session/removes the cookies
+  res.redirect(`/login`);
 });
 
-//
+/*----------------------------------------------------------------------/urls PAGE---------------------*/
 app.get("/urls", (req, res) => {
+  if (typeof req.session.user_id === "undefined") {
+    return res.status(400).send(
+      'Error! Cannot access URLs without logging in first! Please <a href="/login"> try again</a>'
+    );
+  }
   const templateVars = {
     urls: urlDatabase,
-    usercookie: req.cookies["user_id"]
+    usercookie: req.session.user_id
   };
   res.render("urls_index", templateVars);
+    
 });
 
 app.post("/urls", (req, res) => {
   let dataReceived = req.body;
   let newShortUrl = generateRandomString();
-  let userCookie = req.cookies["user_id"];
+  let userCookie = req.session.user_id;
   urlDatabase[newShortUrl] = {
     longURL: dataReceived.longURL,
     userID: userCookie.id
   };
 
-  console.log("Data received: ", dataReceived); // Logging the POST request body to the console
+  console.log("Data received: ", dataReceived); // Logging-the-POST-request-body-to-the-console
   console.log(urlDatabase);
 
   res.redirect(`/urls/${newShortUrl}`); // Redirecting client to new URL's (/urls/:shortURL) page
 });
 
+///urls/new
+/*-------------------------------------------------------------/urls New page--------------------------*/
 app.get("/urls/new", (req, res) => {
-  const templateVars = {
-    usercookie: req.cookies["user_id"] // user_id is the cookie's name
-  };
-  res.render("urls_new", templateVars);
+  
+  if (typeof req.session.user_id === "undefined") {
+    res.redirect("/login");
+  } else {
+    const templateVars = {
+      usercookie: req.session.user_id // user_id is the cookie's name
+    };
+    res.render("urls_new", templateVars);
+  }
 });
 
 /*The GET /urls/new route needs to be defined before the GET /urls/:id route. Routes defined earlier will take precedence,
  so if we place this route after the /urls/:id definition, any calls to /urls/new will be handled by app.get("/urls/:id", ...)
  because Express will think that new is a route parameter*/
 
+
+/*-------------------------------------------------------/urls/:shortcut-----------------------------*/
+
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
+  if (typeof urlDatabase[shortURL] === "undefined") {
+    return res.status(400).send({
+      message: 'Error! Invalid URL!'
+    });
+  }
+  //case there is no cookie
+  const usercookie = req.session.user_id;
+  if (typeof req.session.user_id === "undefined") {
+    return res.status(400).send({
+      message: 'Error! You do not have access to this URL!'
+    });
+  }
+
+  if (urlDatabase[shortURL].userID !== usercookie.id) {
+    return res.status(400).send({
+      message: 'Error! You do not have access to this URL!'
+    });
+  }
   const templateVars = {
     shortURL: shortURL,
     longURL: urlDatabase[shortURL].longURL,
-    usercookie: req.cookies["user_id"]
+    usercookie: req.session.user_id
   };
   res.render("urls_show", templateVars);
 });
@@ -178,12 +211,17 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+
+/*-----------------------------------------------------/u/:id-------------------------------*/
+
 app.get("/u/:shortURL", (req, res) => {
   const shortUrl = req.params.shortURL; //getting the parameters passed in the GET req, then we R getting shortURL parameter/property
+  if (typeof urlDatabase[shortUrl] === "undefined") {
+    return res.status(404).send(
+      'Error! Invalid URL. '
+    );
+  }
   const longURL = urlDatabase[shortUrl].longURL;
-  // if (longURL === undefined) {
-  //   //Give 404 response
-  // }
 
   console.log("Redirecting client to: " + longURL);
   res.redirect(301, longURL);
@@ -195,13 +233,33 @@ app.get("/u/:shortURL", (req, res) => {
 //DELETE
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const usercookie = req.cookies["user_id"];
+  const usercookie = req.session.user_id;
   const shortURL = req.params.shortURL;
-  const userID = urlDatabase[shortURL].userID;
-  if (userID === usercookie.id) {
-    console.log(`Deleting ${urlDatabase[shortURL].longURL} from the database...`);
-    delete urlDatabase[shortURL];
+  
+  if (typeof urlDatabase[shortURL] === "undefined") {
+    return res.status(400).send({
+      message: 'Error! Invalid URL!'
+    });
   }
+  //case there is no cookie
+  
+  if (typeof req.session.user_id === "undefined") {
+    return res.status(400).send({
+      message: 'Error! You do not have access to this URL!'
+    });
+  }
+
+
+  
+  if (urlDatabase[shortURL].userID !== usercookie.id) {
+    return res.status(400).send({
+      message: 'Error! You do not have access to this URL!'
+    });
+  }
+  // if (userID === usercookie.id) {
+  console.log(`Deleting ${urlDatabase[shortURL].longURL} from the database...`);
+  delete urlDatabase[shortURL];
+  // }
 
   res.redirect("/urls"); //After deletion, the client is being redirected back to the urls_index page ("/urls").
 });
@@ -213,7 +271,7 @@ app.get("/urls/:shortURL/edit", (req, res) => {
   const templateVars = {
     shortURL: shortURL,
     longURL: urlDatabase[shortURL].longURL,
-    usercookie: req.cookies["user_id"]
+    usercookie: req.session.user_id
   };
   console.log(templateVars);
   res.render("urls_show", templateVars);
@@ -221,7 +279,7 @@ app.get("/urls/:shortURL/edit", (req, res) => {
 
 app.post("/urls/:shortURL/edit", (req, res) => {
 
-  const usercookie = req.cookies["user_id"];
+  const usercookie = req.session.user_id;
   const shortURL = req.params.shortURL;
   const userID = urlDatabase[shortURL].userID;
   const newURL = req.body.newURL;
@@ -234,6 +292,7 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 });
 
 
+/*------------------------------------------------------------------listen------------------*/
 
 app.listen(PORT, () => {
   console.log(`Tiny app listening on port ${PORT}!`);
