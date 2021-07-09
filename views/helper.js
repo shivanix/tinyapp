@@ -35,6 +35,7 @@ const authenticate = (userObj, userDB) => {
 };
 
 //------------------------------------------------------------------------
+//Compares user email to email stored in database
 const emailLookup = (userEmail, userDB) => {
   for (let userKey of Object.keys(userDB)) {
     const databaseUserEmail = userDB[userKey].email;
