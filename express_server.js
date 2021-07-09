@@ -155,7 +155,7 @@ app.post("/urls", (req, res) => {
 /*-------------------------------------------------------------/urls New PAGE--------------------------*/
 app.get("/urls/new", (req, res) => {
   
-  if (typeof req.session.user_id === "undefined") {
+  if (!req.session.user_id) {
     res.redirect("/login");
   } else {
     const templateVars = {
@@ -234,14 +234,14 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   const usercookie = req.session.user_id;
   const shortURL = req.params.shortURL;
   
-  if (typeof urlDatabase[shortURL] === "undefined") {
+  if (!urlDatabase[shortURL]) {
     return res.status(400).send({
       message: 'Error! Invalid URL!'
     });
   }
   //case there is no cookie
   
-  if (typeof req.session.user_id === "undefined") {
+  if (!req.session.user_id) {
     return res.status(400).send({
       message: 'Error! You do not have access to this URL!'
     });
