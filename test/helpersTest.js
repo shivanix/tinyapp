@@ -1,4 +1,3 @@
-// const assert = require('chai').assert;
 const { assert } = require('chai');
 
 const { emailLookup, generateRandomString, authenticate } = require('../views/helper');
@@ -6,32 +5,10 @@ const bcrypt = require('bcryptjs');
 const usersDatabase = {};
 const urlDatabase = {};
 
-const generateNewUser = (dataReceived)=>{
-  const newId = generateRandomString();
 
-  const newUserEmail = dataReceived.email;
-  const emailAlreadyInUse = emailLookup(newUserEmail, usersDatabase);
-  console.log("Email already in use: ", emailAlreadyInUse);
-  if (emailAlreadyInUse) {
-    console.error("This email is already in use");
-    return;
-}
-const newPassword = bcrypt.hashSync(dataReceived.password);
-
-const newUserObj = {
-  id: newId,
-  email: newUserEmail,
-  password: newPassword
-};
-
-usersDatabase[newId] = newUserObj;
-};
 const user1 = {email: "user@exapmle.com", password: "bazinga"};
 const user2 = {email: "user2@example.com", password: "whatever"};
 
-// generateNewUser(user1);
-// generateNewUser(user2);
-// console.log(emailLookup(user1.email, usersDatabase));
 const testUsers = {
   "userRandomID": {
     id: "userRandomID", 
@@ -62,5 +39,3 @@ describe('emailLookup', function() {
     assert.deepEqual(userID, expectedOutput);
   });
 });
-
-// module.exports={urlDatabase}

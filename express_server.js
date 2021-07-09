@@ -54,7 +54,6 @@ app.get("/register", (req, res) => {
 
   const password = "purple-monkey-dinosaur"; // found in the req.params object
   const hashedPassword = bcrypt.hashSync(password, 10);
-  console.log(hashedPassword);
 
   res.render("urls_register", templateVars);
 });
@@ -70,7 +69,6 @@ app.post("/register", (req, res) => {
   }
   const newUserEmail = dataReceived.email;
   const emailAlreadyInUse = emailLookup(newUserEmail, usersDatabase);
-  console.log("Email already in use: ", emailAlreadyInUse);
   if (typeof emailAlreadyInUse !== "undefined") {
     return res.status(400).send({
       message: 'Error! Email already in use!'
@@ -86,10 +84,6 @@ app.post("/register", (req, res) => {
   };
 
   usersDatabase[newId] = newUserObj;
-
-  console.log("Data received: ", dataReceived);
-  console.log("New user created: ", usersDatabase[newId]);
-  
   res.redirect(`/login`);
 });
 
@@ -108,14 +102,14 @@ app.post("/login", (req, res) => {
     return res.status(403).send("Incorrect Email or password! Please <a href='/login'> try again</a>"
     );
   }
-  console.log(userData, " Logged in");
+  
   req.session.user_id = usersDatabase[userValidation.id]; // Setting cookie
   const templateVars = {
     user: userData,
     urls: urlDatabase,
     usercookie: req.session.user_id
   };
-  console.log(req.body);
+  
   res.render("urls_index", templateVars);
 });
 
@@ -153,9 +147,6 @@ app.post("/urls", (req, res) => {
     userID: userCookie.id
   };
 
-  console.log("Data received: ", dataReceived); // Logging-the-POST-request-body-to-the-console
-  console.log(urlDatabase);
-
   res.redirect(`/urls/${newShortUrl}`); // Redirecting client to new URL's (/urls/:shortURL) page
 });
 
@@ -164,7 +155,6 @@ app.post("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   
   if (typeof req.session.user_id === "undefined") {
-    console.log("ALERT !!!!!!!!!!!!!!!!!");
     res.redirect("/login");
   } else {
     const templateVars = {
@@ -225,7 +215,6 @@ app.get("/u/:shortURL", (req, res) => {
   }
   const longURL = urlDatabase[shortUrl].longURL;
 
-  console.log("Redirecting client to: " + longURL);
   res.redirect(301, longURL);
 });
 
@@ -258,10 +247,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
       message: 'Error! You do not have access to this URL!'
     });
   }
-  // if (userID === usercookie.id) {
-  console.log(`Deleting ${urlDatabase[shortURL].longURL} from the database...`);
   delete urlDatabase[shortURL];
-  // }
 
   res.redirect("/urls"); //After deletion, the client is being redirected back to the urls_index page ("/urls").
 });
@@ -276,7 +262,7 @@ app.get("/urls/:shortURL/edit", (req, res) => {
     longURL: urlDatabase[shortURL].longURL,
     usercookie: req.session.user_id
   };
-  console.log(templateVars);
+  
   res.render("urls_show", templateVars);
 });
 
@@ -287,7 +273,6 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   const userID = urlDatabase[shortURL].userID;
   const newURL = req.body.newURL;
   if (userID === usercookie.id) {
-    console.log("Replacing", urlDatabase[shortURL].longURL, "with", newURL);
     urlDatabase[shortURL].longURL = newURL;
   }
 
