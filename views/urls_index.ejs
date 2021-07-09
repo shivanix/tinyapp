@@ -41,8 +41,8 @@
               <td><%= urls[url].longURL %></td>
               <!--urls[url] -(this will get the value of the key, which will be an object containing userID and longURL)-->
               <td>
-                <form method="GET" action=<%= `/urls/${[url]}` %>>
-                  <input id=<%= url %> type="submit" name=<%= [url] %> value="EDIT"> </form>
+                <form method="GET" action=<%= `/urls/${url}` %>>
+                  <button type="submit">EDIT </button></form>
               </td>
               <td>
                 <form method="POST" action=<%= `/urls/${url}/delete` %>>

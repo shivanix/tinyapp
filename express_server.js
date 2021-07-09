@@ -38,7 +38,7 @@ const usersDatabase = {};
 
 //Res when GET request gets triggered at the location ("/" here).
 app.get("/", (req, res) => {
-  if (typeof req.session.user_id === "undefined") {
+  if (!req.session.user_id) {
     res.redirect("/login");
   } else {
     res.redirect("/urls");
@@ -125,7 +125,7 @@ app.post("/logout", (req, res) => {
 
 /*----------------------------------------------------------------------/urls PAGE---------------------*/
 app.get("/urls", (req, res) => {
-  if (typeof req.session.user_id === "undefined") {
+  if (!req.session.user_id) {
     return res.status(400).send(
       'Error! Cannot access URLs without logging in first! Please <a href="/login"> try again</a>'
     );
@@ -139,6 +139,7 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  console.log("Posting to urls");
   let dataReceived = req.body;
   let newShortUrl = generateRandomString();
   let userCookie = req.session.user_id;
@@ -146,7 +147,7 @@ app.post("/urls", (req, res) => {
     longURL: dataReceived.longURL,
     userID: userCookie.id
   };
-
+  console.log("Database after creating new url:", urlDatabase);
   res.redirect(`/urls/${newShortUrl}`); // Redirecting client to new URL's (/urls/:shortURL) page
 });
 
@@ -173,14 +174,14 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  if (typeof urlDatabase[shortURL] === "undefined") {
+  if (!urlDatabase[shortURL]) {
     return res.status(400).send({
       message: 'Error! Invalid URL!'
     });
   }
   //case there is no cookie
   const usercookie = req.session.user_id;
-  if (typeof req.session.user_id === "undefined") {
+  if (!req.session.user_id) {
     return res.status(400).send({
       message: 'Error! You do not have access to this URL!'
     });
@@ -204,18 +205,24 @@ app.get("/urls.json", (req, res) => {
 });
 
 
-/*-----------------------------------------------------/u/:id-------------------------------*/
+/*-----------------------------------------------------/u/:shortURL-------------------------------*/
 
 app.get("/u/:shortURL", (req, res) => {
+  console.log("GET /u/short");
+
   const shortUrl = req.params.shortURL; //getting the parameters passed in the GET req, then we R getting shortURL parameter/property
-  if (typeof urlDatabase[shortUrl] === "undefined") {
+  if (!urlDatabase[shortUrl]) {
     return res.status(404).send(
       'Error! Invalid URL. '
     );
   }
+  console.log("/u/", shortUrl);
+
   const longURL = urlDatabase[shortUrl].longURL;
 
-  res.redirect(301, longURL);
+  console.log("Redirecting to: ", longURL);
+
+  res.redirect(longURL);
 });
 
 
@@ -272,10 +279,12 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   const shortURL = req.params.shortURL;
   const userID = urlDatabase[shortURL].userID;
   const newURL = req.body.newURL;
+  console.log("User id: ", userID, "user cookie", usercookie.id, "shorturl", shortURL, "new url:", newURL);
   if (userID === usercookie.id) {
     urlDatabase[shortURL].longURL = newURL;
+    console.log("Updated database:", urlDatabase);
   }
-
+  
   res.redirect(`/urls`);
 });
 
