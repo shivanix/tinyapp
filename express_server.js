@@ -93,8 +93,9 @@ app.post("/register", (req, res) => {
   res.redirect(`/login`);
 });
 
-//Login
+
 /*-----------------------------------------------------------------------LOGIN-------------------*/
+//Login
 
 app.get("/login", (req, res) => {
   res.render("urls_login");
@@ -119,7 +120,7 @@ app.post("/login", (req, res) => {
 });
 
 
-/*---------------------------------------------------------------------------lOGOUT----------------------*/
+/*---------------------------------------------------------------------------LOGOUT----------------------*/
 //Logout
 app.post("/logout", (req, res) => {
   console.log("Deleting cookie for user");
@@ -159,10 +160,11 @@ app.post("/urls", (req, res) => {
 });
 
 ///urls/new
-/*-------------------------------------------------------------/urls New page--------------------------*/
+/*-------------------------------------------------------------/urls New PAGE--------------------------*/
 app.get("/urls/new", (req, res) => {
   
   if (typeof req.session.user_id === "undefined") {
+    console.log("ALERT !!!!!!!!!!!!!!!!!");
     res.redirect("/login");
   } else {
     const templateVars = {
@@ -229,7 +231,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 
 
-/*--------------------------------------------------------------------------------------------*/
+/*-------------------------------------------------------Delete-------------------------------------*/
 //DELETE
 
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -264,6 +266,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls"); //After deletion, the client is being redirected back to the urls_index page ("/urls").
 });
 
+/*------------------------------------------------------Edit--------------------------------*/
 //EDIT
 
 app.get("/urls/:shortURL/edit", (req, res) => {

@@ -8,16 +8,15 @@
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
-        <% if(typeof user === "undefined"){ %>
-          <a class="nav-item nav-link" href="/login">Create New URL</a>
+        <% if(typeof usercookie === "undefined"){ %>
+          <a class="nav-item nav-link" href="/login">Create New Short URL</a>
           <% } else{ %>
-            <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-          
+            <a class="nav-item nav-link" href="/urls/new">Create New Short URL</a>
           <% } %>
       </div>
     </div>
     <div>
-      <% if(typeof user === "undefined" && typeof usercookie === "undefined"){ %>
+      <% if(typeof usercookie === "undefined"){ %>
         <form action="/login" method="GET">
         <input type="submit" value="Login">
         </form>
@@ -25,14 +24,7 @@
           <form action="/register" method="GET">
             <input type="submit" value="Register">
           </form>
-
-        <% } else if(typeof user !== "undefined"){ %>
-          <form action="/logout" method="POST">
-            <label for="name"><h4><%= `Logged in as: ${user.email}` %></h4></label>
-            <input type="submit" value="Logout">
-          </form>
-        
-        <% }else if(usercookie !== "undefined"){ %>
+        <% }else if(typeof usercookie !== "undefined"){ %>
           <form action="/logout" method="POST">
             <label for="name"><h4><%= `Logged in as: ${usercookie.email}` %></h4></label>
             <input type="submit" value="Logout">
