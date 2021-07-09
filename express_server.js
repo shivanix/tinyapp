@@ -52,9 +52,6 @@ app.get("/", (req, res) => {
 app.get("/register", (req, res) => {
   const templateVars = {};
 
-  const password = "purple-monkey-dinosaur"; // found in the req.params object
-  const hashedPassword = bcrypt.hashSync(password, 10);
-
   res.render("urls_register", templateVars);
 });
 
@@ -99,17 +96,16 @@ app.post("/login", (req, res) => {
   const userData = req.body;
   const userValidation = authenticate(userData, usersDatabase);
   if (typeof userValidation === "undefined") {
-    return res.status(403).send("Incorrect Email or password! Please <a href='/login'> try again</a>"
-    );
+    return res.status(403).send("Incorrect Email or password! Please <a href='/login'> try again</a>");
   }
-  
+
   req.session.user_id = usersDatabase[userValidation.id]; // Setting cookie
   const templateVars = {
     user: userData,
     urls: urlDatabase,
     usercookie: req.session.user_id
   };
-  
+
   res.render("urls_index", templateVars);
 });
 
@@ -118,7 +114,7 @@ app.post("/login", (req, res) => {
 //Logout
 app.post("/logout", (req, res) => {
   console.log("Deleting cookie for user");
- 
+
   req.session = null; // Destroys the session/removes the cookies
   res.redirect(`/login`);
 });
@@ -135,11 +131,10 @@ app.get("/urls", (req, res) => {
     usercookie: req.session.user_id
   };
   res.render("urls_index", templateVars);
-    
+
 });
 
 app.post("/urls", (req, res) => {
-  console.log("Posting to urls");
   let dataReceived = req.body;
   let newShortUrl = generateRandomString();
   let userCookie = req.session.user_id;
@@ -147,14 +142,13 @@ app.post("/urls", (req, res) => {
     longURL: dataReceived.longURL,
     userID: userCookie.id
   };
-  console.log("Database after creating new url:", urlDatabase);
   res.redirect(`/urls/${newShortUrl}`); // Redirecting client to new URL's (/urls/:shortURL) page
 });
 
 ///urls/new
 /*-------------------------------------------------------------/urls New PAGE--------------------------*/
 app.get("/urls/new", (req, res) => {
-  
+
   if (!req.session.user_id) {
     res.redirect("/login");
   } else {
@@ -208,7 +202,6 @@ app.get("/urls.json", (req, res) => {
 /*-----------------------------------------------------/u/:shortURL-------------------------------*/
 
 app.get("/u/:shortURL", (req, res) => {
-  console.log("GET /u/short");
 
   const shortUrl = req.params.shortURL; //getting the parameters passed in the GET req, then we R getting shortURL parameter/property
   if (!urlDatabase[shortUrl]) {
@@ -216,11 +209,8 @@ app.get("/u/:shortURL", (req, res) => {
       'Error! Invalid URL. '
     );
   }
-  console.log("/u/", shortUrl);
 
   const longURL = urlDatabase[shortUrl].longURL;
-
-  console.log("Redirecting to: ", longURL);
 
   res.redirect(longURL);
 });
@@ -233,14 +223,14 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   const usercookie = req.session.user_id;
   const shortURL = req.params.shortURL;
-  
+
   if (!urlDatabase[shortURL]) {
     return res.status(400).send({
       message: 'Error! Invalid URL!'
     });
   }
   //case there is no cookie
-  
+
   if (!req.session.user_id) {
     return res.status(400).send({
       message: 'Error! You do not have access to this URL!'
@@ -248,7 +238,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
 
 
-  
   if (urlDatabase[shortURL].userID !== usercookie.id) {
     return res.status(400).send({
       message: 'Error! You do not have access to this URL!'
@@ -269,7 +258,7 @@ app.get("/urls/:shortURL/edit", (req, res) => {
     longURL: urlDatabase[shortURL].longURL,
     usercookie: req.session.user_id
   };
-  
+
   res.render("urls_show", templateVars);
 });
 
@@ -279,12 +268,11 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   const shortURL = req.params.shortURL;
   const userID = urlDatabase[shortURL].userID;
   const newURL = req.body.newURL;
-  console.log("User id: ", userID, "user cookie", usercookie.id, "shorturl", shortURL, "new url:", newURL);
+
   if (userID === usercookie.id) {
     urlDatabase[shortURL].longURL = newURL;
-    console.log("Updated database:", urlDatabase);
   }
-  
+
   res.redirect(`/urls`);
 });
 
