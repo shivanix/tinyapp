@@ -4,16 +4,16 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["screenshot description"](https://github.com/shivanix/tinyapp/blob/master/docs/register-page.png?raw=true)
+!["Register page screenshot"](https://github.com/shivanix/tinyapp/blob/master/docs/register-page.png?raw=true)
 
-!["screenshot description"](https://github.com/shivanix/tinyapp/blob/master/docs/urls-page.png?raw=true)
+!["URLS page screenshot"](https://github.com/shivanix/tinyapp/blob/master/docs/urls-page.png?raw=true)
 
 ## Dependencies
 
 - Node.js
 - Express
 - EJS
-- bcrypt
+- bcryptjs
 - body-parser
 - cookie-session
 
