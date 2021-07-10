@@ -13,17 +13,17 @@ const generateRandomString = () => {
 };
 
 //---------------------------------------------------------------
+//Verifies if the user is in the database and if so checks if the submitted password matches with the one in the database
 const authenticate = (userObj, userDB) => {
   if (!userObj) {
     return false;
   }
   //userObj is the data stored in the userId cookie, in this case an object
-  // const {email, password} = userObj;
-  //const userData = {email: userObj.email, password: userObj.password};
+
   for (let userKey of Object.keys(userDB)) {
     const databaseUser = userDB[userKey];
     if (userObj.email === databaseUser.email) {
-      // if (userObj.password === databaseUser.password) {
+    
       if (bcrypt.compareSync(userObj.password, databaseUser.password)) {
         return databaseUser;
       } else {
